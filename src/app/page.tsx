@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 
 // todo: 
 // Add animation to changing location
+// add error handling
 
 
 
@@ -22,38 +23,22 @@ const WeatherApp = () => {
     wind: null,
     windDeg: null,
   });
-  
-  const APIkey = "8013eb15ab60740a740ecf08e74ba7c0";
-  // const images = useState<{
-  //   success: any | null;
-  //   error: any | null;
-  // }>({
-  //   success: null,
-  //   error: null,
-  // });
-  const image = document.getElementById('weatherImage') as HTMLImageElement | null;
-  const error = document.getElementById('error') as HTMLImageElement | null;
 
+  const APIkey = "8013eb15ab60740a740ecf08e74ba7c0";
+  const [error, setError] = useState<boolean>(false);
   const fetchWeather = useCallback(async () => {
-    if (!city || !image || !image) return;
+    if (!city) return;
     try {
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${APIkey}`
       );
       const data = await response.json();
-
-      if (data.cod === "404") {
-        image.classList.add("hidden");
-        error.classList.remove("hidden");
-        error.classList.add("block");
+      if (data.cod === '404') {
+        setError(true);
         return;
       }
 
-      //tambahain lg kelas-kelasnya biar muncul lagi
-      image.classList.remove("hidden");
-      image.classList.add("block");
-      error.classList.add("hidden");
-
+      setError(false);
       setWeather({
         condition: data.weather[0].description,
         temperature: Math.round(data.main.temp),
@@ -63,15 +48,13 @@ const WeatherApp = () => {
       });
 
       const cuaca = data.weather[0].main.toLowerCase();
+      const image = document.getElementById('weatherImage') as HTMLImageElement;
+
       image.src = `images/${cuaca}.png`;
     } catch (e) {
       console.error(e);
     }
   }, [city]);
-
-  // useEffect(() => {
-  //   fetchWeather();
-  // }, [fetchWeather]);
 
   return (
     <div className="mx-auto container p-4 flex justify-center items-center flex-col min-h-screen">
@@ -101,13 +84,22 @@ const WeatherApp = () => {
             <path d="M14.757 20.171c-.791.523-1.738.829-2.757.829-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5c0 1.019-.306 1.966-.829 2.757l2.829 2.829-1.414 1.414-2.829-2.829zm-9.082-1.171c-3.438 0-5.675-2.629-5.675-5.5 0-2.702 1.951-4.945 4.521-5.408.212-3.951 3.473-7.092 7.479-7.092s7.267 3.141 7.479 7.092c2.57.463 4.521 2.706 4.521 5.408 0 2.855-2.218 5.5-5.675 5.5.3-.63.508-1.31.608-2.026 1.726-.214 3.067-1.691 3.067-3.474 0-2.969-2.688-3.766-4.432-3.72.323-3.983-2.115-6.78-5.568-6.78-3.359 0-5.734 2.562-5.567 6.78-1.954-.113-4.433.923-4.433 3.72 0 1.783 1.341 3.26 3.068 3.474.099.716.307 1.396.607 2.026m6.325-6c1.655 0 3 1.345 3 3s-1.345 3-3 3c-1.656 0-3-1.345-3-3s1.344-3 3-3" fill="" />
           </svg>
         </div>
-        <div className="flex flex-col items-center justify-center">
-          <img className="w-64" src="images/clouds.png" id="weatherImage" alt="weather" />
-          <div className=" mt-4">
-            <h2 className="text-4xl text-center">{weather.temperature ?? "--"} &deg;C</h2>
-            <p id="condition" className="text-xl">{weather.condition ?? "--"}</p>
+        {error ? (
+            <div className="flex flex-col justify-center items-center">
+              <img className="w-64 " id="error" src="images/404.png" alt="error" />
+              <p className="text-2xl" id="error">oops the location isnt found.</p>
+              <p className="text-2xl">Try another location</p>
+            </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center">
+            <img className="w-64" src="images/clouds.png" id="weatherImage" alt="weather" />
+            <div className=" mt-4">
+              <h2 className="text-4xl text-center">{weather.temperature ?? "--"} &deg;C</h2>
+              <p id="condition" className="text-xl">{weather.condition ?? "--"}</p>
+            </div>
           </div>
-        </div>
+        )}
+
         <div className="flex justify-between">
           <div>
             <p>Humidity</p>
@@ -119,13 +111,7 @@ const WeatherApp = () => {
             <p className="text-center" id="windDeg">{weather.windDeg ?? "--"} &deg;</p>
           </div>
         </div>
-        <div className="hidden">
-          <div className="flex flex-col justify-center items-center">
-            <img className="w-64 " id="error" src="images/404.png" alt="error" />
-            <p className="text-2xl" id="error">oops the location isnt found.</p>
-            <p className="text-2xl">Try another location</p>
-          </div>
-        </div>
+
       </div>
     </div>
   );
