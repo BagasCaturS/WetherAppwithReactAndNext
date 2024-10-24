@@ -19,3 +19,17 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* #main{
+  position: relative;
+}
+
+#main::after{
+  content: "Kontl";
+  z-index: 0;
+  color: red;
+  position: absolute;
+  top: 23px;
+  left: 20px;
+  background: red;
+} */

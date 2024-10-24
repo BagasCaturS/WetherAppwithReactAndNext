@@ -1,5 +1,11 @@
 'use client'
 import React, { useEffect, useState, useCallback } from "react";
+// import './global.css'
+
+// todo: 
+// Add animation to changing location
+
+
 
 const WeatherApp = () => {
   const [city, setCity] = useState<string>("");
@@ -16,16 +22,38 @@ const WeatherApp = () => {
     wind: null,
     windDeg: null,
   });
-
+  
   const APIkey = "8013eb15ab60740a740ecf08e74ba7c0";
+  // const images = useState<{
+  //   success: any | null;
+  //   error: any | null;
+  // }>({
+  //   success: null,
+  //   error: null,
+  // });
+  const image = document.getElementById('weatherImage') as HTMLImageElement | null;
+  const error = document.getElementById('error') as HTMLImageElement | null;
 
   const fetchWeather = useCallback(async () => {
-    if (!city) return;
+    if (!city || !image || !image) return;
     try {
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${APIkey}`
       );
       const data = await response.json();
+
+      if (data.cod === "404") {
+        image.classList.add("hidden");
+        error.classList.remove("hidden");
+        error.classList.add("block");
+        return;
+      }
+
+      //tambahain lg kelas-kelasnya biar muncul lagi
+      image.classList.remove("hidden");
+      image.classList.add("block");
+      error.classList.add("hidden");
+
       setWeather({
         condition: data.weather[0].description,
         temperature: Math.round(data.main.temp),
@@ -34,7 +62,6 @@ const WeatherApp = () => {
         windDeg: data.wind.deg,
       });
 
-      const image = document.getElementById('weatherImage') as HTMLImageElement;
       const cuaca = data.weather[0].main.toLowerCase();
       image.src = `images/${cuaca}.png`;
     } catch (e) {
@@ -42,17 +69,17 @@ const WeatherApp = () => {
     }
   }, [city]);
 
-  useEffect(() => {
-    fetchWeather();
-  }, [fetchWeather]);
+  // useEffect(() => {
+  //   fetchWeather();
+  // }, [fetchWeather]);
 
   return (
     <div className="mx-auto container p-4 flex justify-center items-center flex-col min-h-screen">
-      <div className="bg-slate-700 p-4 rounded-md">
+      <div id="main" className="bg-slate-700 p-4 rounded-md block">
         <div className="flex items-center justify-center mb-4 gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24"><path d="M4.069 13h-4.069v-2h4.069c-.041.328-.069.661-.069 1s.028.672.069 1zm3.034-7.312l-2.881-2.881-1.414 1.414 2.881 2.881c.411-.529.885-1.003 1.414-1.414zm11.209 1.414l2.881-2.881-1.414-1.414-2.881 2.881c.528.411 1.002.886 1.414 1.414zm-6.312-3.102c.339 0 .672.028 1 .069v-4.069h-2v4.069c.328-.041.661-.069 1-.069zm0 16c-.339 0-.672-.028-1-.069v4.069h2v-4.069c-.328.041-.661.069-1 .069zm7.931-9c.041.328.069.661.069 1s-.028.672-.069 1h4.069v-2h-4.069zm-3.033 7.312l2.88 2.88 1.415-1.414-2.88-2.88c-.412.528-.886 1.002-1.415 1.414zm-11.21-1.415l-2.88 2.88 1.414 1.414 2.88-2.88c-.528-.411-1.003-.885-1.414-1.414zm2.312-4.897c0 2.206 1.794 4 4 4s4-1.794 4-4-1.794-4-4-4-4 1.794-4 4zm10 0c0 3.314-2.686 6-6 6s-6-2.686-6-6 2.686-6 6-6 6 2.686 6 6z" /></svg>
           <input
-          spellCheck="false"
+            spellCheck="false"
             type="text"
             id="location"
             value={city}
@@ -90,6 +117,13 @@ const WeatherApp = () => {
             <p>Wind Speed</p>
             <p className="text-center" id="windSpeed">{weather.wind ?? "--"} Km/h</p>
             <p className="text-center" id="windDeg">{weather.windDeg ?? "--"} &deg;</p>
+          </div>
+        </div>
+        <div className="hidden">
+          <div className="flex flex-col justify-center items-center">
+            <img className="w-64 " id="error" src="images/404.png" alt="error" />
+            <p className="text-2xl" id="error">oops the location isnt found.</p>
+            <p className="text-2xl">Try another location</p>
           </div>
         </div>
       </div>
