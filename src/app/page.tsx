@@ -1,11 +1,33 @@
 'use client'
 import React, { useEffect, useState, useCallback } from "react";
-// import './global.css'
 
 // todo: 
 // Add animation to changing location
-// add error handling
 
+const LocationComponent = () => {
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          setError(null);
+        },
+        (err) => {
+          setError(err.message);
+        }
+      );
+    } else {
+      setError('Geolocation is not supported by this browser.');
+    }
+  };
+  // handleGetLocation();
+}
 
 
 const WeatherApp = () => {
@@ -28,6 +50,7 @@ const WeatherApp = () => {
   const [error, setError] = useState<boolean>(false);
   const fetchWeather = useCallback(async () => {
     if (!city) return;
+
     try {
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${APIkey}`
@@ -50,11 +73,18 @@ const WeatherApp = () => {
       const cuaca = data.weather[0].main.toLowerCase();
       const image = document.getElementById('weatherImage') as HTMLImageElement;
 
-      image.src = `images/${cuaca}.png`;
+      image.src = `images/${cuaca}.webp`;
     } catch (e) {
       console.error(e);
     }
   }, [city]);
+  // function untuk saat klik enter langsung ke search
+  const enter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      fetchWeather();
+      console.log('key pressed enter');
+    }
+  }
 
   return (
     <div className="mx-auto container p-4 flex justify-center items-center flex-col min-h-screen">
@@ -69,6 +99,7 @@ const WeatherApp = () => {
             onChange={(e) => setCity(e.target.value)}
             placeholder="Enter city"
             className="input input-bordered w-full max-w-xs"
+            onKeyDown={enter}
           />
           <svg
             id="search"
@@ -85,21 +116,20 @@ const WeatherApp = () => {
           </svg>
         </div>
         {error ? (
-            <div className="flex flex-col justify-center items-center">
-              <img className="w-64 " id="error" src="images/404.png" alt="error" />
-              <p className="text-2xl" id="error">oops the location isnt found.</p>
-              <p className="text-2xl">Try another location</p>
-            </div>
+          <div className="flex flex-col justify-center items-center">
+            <img className="w-64 " id="error" src="images/404.webp" alt="error" />
+            <p className="text-2xl">oops the location isnt found.</p>
+            <p className="text-2xl">Try another location</p>
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center">
-            <img className="w-64" src="images/clouds.png" id="weatherImage" alt="weather" />
+            <img className="w-64" src="images/clouds.webp" id="weatherImage" alt="weather" />
             <div className=" mt-4">
               <h2 className="text-4xl text-center">{weather.temperature ?? "--"} &deg;C</h2>
               <p id="condition" className="text-xl">{weather.condition ?? "--"}</p>
             </div>
           </div>
         )}
-
         <div className="flex justify-between">
           <div>
             <p>Humidity</p>
