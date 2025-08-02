@@ -56,6 +56,7 @@ const WeatherApp = () => {
     windDeg: null,
   });
 
+// Ignore this api key lol
   const APIkey = "8013eb15ab60740a740ecf08e74ba7c0";
   const [error, setError] = useState<boolean>(false);
   const fetchWeather = useCallback(async () => {
